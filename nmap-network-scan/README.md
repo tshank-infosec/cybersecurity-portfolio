@@ -65,15 +65,16 @@ nmap -A <target IP>
 
 ## Findings
 
-> Replace this section with your actual scan results.
-
 | Port | State | Service | Version |
 |---|---|---|---|
-| 22 | open | SSH | OpenSSH x.x |
-| 80 | open | HTTP | Apache httpd x.x |
-| ... | ... | ... | ... |
-
-**OS Fingerprint:** _(fill in from `-A` scan output)_
+| 135 | open | TCP | Microsoft Windows RPC |
+| 139 | open | TCP | Microsoft Windows netbios-ssn |
+| 445 | open | TCP | microsoft-ds? |
+Running: Microsoft Windows 11
+OS CPE: cpe:/o:microsoft:windows_11
+OS details: Microsoft Windows 11 24H2
+Network Distance: 1 hop
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
 
 ### Screenshots
 
@@ -86,30 +87,30 @@ nmap -A <target IP>
 
 ## Analysis
 
-- **Open SSH (22)** indicates remote administrative access is enabled on the target — a common target for brute-force and credential-based attacks if not hardened.
-- **Open HTTP (80)** indicates a web server is running, expanding the attack surface to web application vulnerabilities.
-- **Version banners** (e.g., Apache 2.4.29) can be cross-referenced against CVE databases (NVD, Exploit-DB) to check for known vulnerabilities affecting that specific version.
-- Together, this information forms the initial attack surface map an attacker or pentester would use to plan further enumeration or exploitation.
+- Port 135 — Microsoft RPC (Remote Procedure Call) Handles remote procedure calls, which Windows uses for inter-process communication and remote management. RPC is frequently targeted for enumeration because it can leak information about the system (hostname, running services, sometimes user accounts) and has historically been the entry point for major exploits such as MS03-026 (RPC/DCOM), which was used by the Blaster worm.
 
----
+- Port 139 — NetBIOS Session Service Part of the legacy NetBIOS-over-TCP/IP suite, used for older file/printer sharing and name resolution. Its presence indicates NetBIOS is enabled on the target, which can be leveraged for network enumeration (device names, workgroup/domain info) and was historically exploited via null session attacks that allowed unauthenticated access to user/group data.
 
-## MITRE ATT&CK Mapping
+- Port 445 — Microsoft-DS (SMB) The modern SMB port, used for file sharing, printer sharing, and inter-process communication on Windows networks. This is one of the most significant ports from a security standpoint — it was the vector for EternalBlue (MS17-010), which powered WannaCry and NotPetya. Any exposed SMB service should be checked for version and patch level, since unpatched SMB remains one of the most exploited services in real-world breaches.
 
-| Technique | ID | Description |
-|---|---|---|
-| Active Scanning: Scanning IP Blocks | T1595.001 | Used to discover live hosts on the network |
-| Active Scanning: Vulnerability Scanning | T1595.002 | Version detection used to identify potentially vulnerable services |
-| Network Service Discovery | T1046 | Enumeration of open ports and services on the target |
-| Gather Victim Host Information: Software | T1592.002 | Identifying software and versions running on the target |
-
+- Overall Analysis The combination of ports 135, 139, and 445 open indicates this Windows target has File and Printer Sharing enabled, exposing SMB and legacy NetBIOS services. This service trio is one of the most historically exploited combinations in Windows environments, matching the footprint associated with worms like Blaster and WannaCry. In a real-world assessment, the next step would be running targeted SMB enumeration scripts, such as:
+```bash
+- nmap --script smb-enum-shares,smb-os-discovery <target IP>
+```
 ---
 
 ## Lessons Learned
 
-- Different Nmap scan types (`-sn`, `-sS`, `-sV`, `-A`) each serve a distinct purpose in the reconnaissance workflow — from a quiet host check to a full aggressive sweep.
-- Service version detection is a critical bridge between reconnaissance and vulnerability research.
-- Aggressive scans (`-A`) provide the most detail but generate significant network noise, making them unsuitable for stealthy real-world engagements without careful scoping.
-- Building and documenting a lab like this reinforces the full recon → enumeration → analysis workflow used in real SOC and penetration testing work.
+- Scan results depend heavily on environment configuration, not just command syntax. My first -sS -p- scan came back with all ports filtered and no response — the issue wasn't Nmap, it was that Windows Defender Firewall was blocking inbound traffic by default. Disabling it on the target VM revealed the real port states.
+  
+- Privilege level matters for scan accuracy. SYN scans (-sS) require raw socket access, so running Nmap with sudo is necessary for the results to reflect what -sS is actually designed to do.
+- A "filtered, no response" result is diagnostic information in itself. Rather than being a failure, it pointed directly at a firewall/network configuration issue, which mirrors real-world scenarios where filtered ports often mean a firewall is actively dropping traffic rather than the host being unreachable.
+  
+- Different scan types serve different purposes in a real workflow: -sn confirms a host is alive, -sS -p- maps the full port range, -sV identifies service versions, and -A pulls it all together (with added noise) — understanding when to use each is more valuable than memorizing the flags.
+  
+- Open ports tell a story about the target's role and risk. Seeing 135, 139, and 445 open together immediately signals a Windows host with File and Printer Sharing enabled — the same footprint associated with major historical exploits (Blaster, WannaCry). Recognizing these patterns is a core skill in translating raw scan output into actionable security analysis.
+  
+- Documentation is what turns a scan into a project. The scan itself takes seconds; explaining what the ports mean, why they matter, and what the logical next step would be (e.g., SMB enumeration) is what demonstrates actual security analysis skill to anyone reviewing the work.
 
 ---
 
