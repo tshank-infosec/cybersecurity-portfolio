@@ -77,12 +77,10 @@ nmap -A <target IP>
 
 ### Screenshots
 
-> Add terminal screenshots for each scan stage.
-
-- `screenshots/01-host-discovery.png`
-- `screenshots/02-port-scan.png`
-- `screenshots/03-service-version.png`
-- `screenshots/04-aggressive-scan.png`
+<img width="1278" height="1306" alt="4" src="https://github.com/user-attachments/assets/efe9a980-3e88-496b-8287-be10ef2720ed" />
+<img width="1278" height="1306" alt="3" src="https://github.com/user-attachments/assets/cefc5be9-5f8d-4dda-bccd-e01b1d65a2a5" />
+<img width="1278" height="1306" alt="2" src="https://github.com/user-attachments/assets/9c5300e6-fa90-424d-b883-78b318d48b76" />
+<img width="1278" height="1306" alt="1" src="https://github.com/user-attachments/assets/b9548052-1018-47b5-bfbb-d7776e25f72c" />
 
 ---
 
