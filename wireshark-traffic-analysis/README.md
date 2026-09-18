@@ -101,22 +101,22 @@ Nmap done: 1 IP address (1 host up) scanned in 23.58 seconds
 **1. Live capture during the Nmap scan**
 Shows the capture running on `eth0` in real time, alongside the terminal output of the completed Nmap scan. The packet list shows the flood of SYN packets from `192.168.56.101:54160` to sequential ports on `192.168.56.102`, followed by red-highlighted `RST, ACK` responses (Wireshark's default coloring for reset packets).
 
-![Live capture during Nmap scan](screenshots/01-live-capture-nmap-scan.png)
+<img width="2560" height="1315" alt="04-tcp-stream-port139" src="https://github.com/user-attachments/assets/84ce7cb1-7d5f-4d82-ab1f-e4c86f69336c" />
 
 **2. Full scan filtered by `tcp`**
 The saved capture (`nmapscancap.pcapng`) filtered to `tcp`, showing the scan from the beginning: SYN packets sent to ports 256, 1720, 199, 143, 113, 139, 554, 443, 53, and 587 in rapid succession, each from the same source port (54160). Note packet #22 — a `SYN, ACK` from port 139, standing out as the one genuine "open port" response among a run of resets.
 
-![Full scan filtered by tcp](screenshots/02-tcp-filter-full-scan.png)
+<img width="2560" height="1315" alt="03-arp-resolution" src="https://github.com/user-attachments/assets/d1bb5ff6-81a7-4462-af98-1dcb4a8da3ab" />
 
 **3. ARP resolution filtered by `arp`**
 Shows the ARP exchange that occurred before scanning began: Kali (`192.168.56.101`) asking who has `192.168.56.102`, and the target replying with its MAC address (`08:00:27:b9:e1:e4`). A second, later ARP exchange shows the target resolving Kali's MAC address (`08:00:27:5a:87:bc`) in return.
 
-![ARP resolution](screenshots/03-arp-resolution.png)
+<img width="2560" height="1315" alt="02-tcp-filter-full-scan" src="https://github.com/user-attachments/assets/c4ef30b3-617c-445e-97b4-9d12a1e5eed9" />
 
 **4. Isolated TCP stream for port 139 (`tcp.stream eq 5`)**
 Filtering to this single stream isolates the exact three packets for port 139: the SYN from Kali, the SYN-ACK from the Windows target confirming the port is open, and the RST Kali sends back immediately — never completing a full connection.
 
-![TCP stream for port 139](screenshots/04-tcp-stream-port139.png)
+<img width="2560" height="1315" alt="01-live-capture-nmap-scan" src="https://github.com/user-attachments/assets/bb78cb6b-885f-4030-96c1-cdf352b5a71a" />
 
 ---
 
